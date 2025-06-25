@@ -131,7 +131,7 @@ async def auto_delete_all_invalid_cookie():
 
 @waves_bind_uid.on_command(
     (
-        "绑定",
+        #"绑定",
         "切换",
         "删除全部特征码",
         "删除全部UID",
@@ -149,7 +149,7 @@ async def send_waves_bind_uid_msg(bot: Bot, ev: Event):
     if "绑定" in ev.command:
         if not uid:
             return await bot.send(
-                f"该命令需要带上正确的uid!\n{PREFIX}绑定uid\n", at_sender
+                #f"该命令需要带上正确的uid!\n{PREFIX}绑定uid\n", at_sender
             )
         uid_list = await WavesBind.get_uid_list_by_game(qid, ev.bot_id)
         cookie_uid_list = await WavesUser.select_user_cookie_uids(qid)
