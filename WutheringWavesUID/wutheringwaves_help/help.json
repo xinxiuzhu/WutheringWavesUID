@@ -2,14 +2,7 @@
   "绑定账号": {
     "desc": "在执行查询之前请绑定账号",
     "data": [
-      {
-        "name": "绑定特征码",
-        "desc": "绑定特征码",
-        "eg": "绑定123456",
-        "need_ck": false,
-        "need_sk": false,
-        "need_admin": false
-      },
+      
       {
         "name": "切换特征码",
         "desc": "切换绑定的账户",
