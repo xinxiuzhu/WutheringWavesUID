@@ -7,10 +7,12 @@ from gsuid_core.sv import SV
 from .darw_rank_card import draw_rank_img
 from .draw_all_rank_card import draw_all_rank_card
 from .draw_total_rank_card import draw_total_rank
+from .draw_train_rank import draw_train_rank
 
-sv_waves_rank_list = SV("ww角色排行")
+sv_waves_rank_list = SV("ww角色排行", priority=1)
 sv_waves_rank_all_list = SV("ww角色总排行", priority=1)
 sv_waves_rank_total_list = SV("ww练度总排行", priority=0)
+sv_ww_group_rank = SV("ww练度排行", priority=0)
 
 
 @sv_waves_rank_list.on_regex("^[\u4e00-\u9fa5]+(?:排行|排名)$", block=True)
@@ -89,4 +91,11 @@ async def send_total_rank_card(bot: Bot, ev: Event):
 
     pages = 1
     im = await draw_total_rank(bot, ev, pages)
+    await bot.send(im)
+
+
+@sv_ww_group_rank.on_command(("练度排行", "本群练度排行"), block=True)
+async def send_group_rank_card(bot: Bot, ev: Event):
+    """本群练度排行"""
+    im = await draw_train_rank(bot, ev)
     await bot.send(im)
