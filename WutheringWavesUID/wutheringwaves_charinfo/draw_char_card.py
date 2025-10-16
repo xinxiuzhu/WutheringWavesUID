@@ -251,8 +251,8 @@ async def ph_card_draw(
                 fetter_icon = await get_attribute_effect(_phantom.fetterDetail.name)
                 fetter_icon = fetter_icon.resize((50, 50))
                 phantom_icon.alpha_composite(fetter_icon, dest=(205, 0))
-                phantom_icon = phantom_icon.resize((100, 100))
-                sh_temp.alpha_composite(phantom_icon, dest=(20, 20))
+                phantom_icon = phantom_icon.resize((120, 120))
+                sh_temp.alpha_composite(phantom_icon, dest=(8, 8))
                 phantomName = (
                     _phantom.phantomProp.name.replace("·", " ")
                     .replace("（", " ")

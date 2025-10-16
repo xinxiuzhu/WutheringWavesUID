@@ -8,6 +8,12 @@ import aiohttp
 from aiohttp import ClientTimeout, ContentTypeError
 
 from gsuid_core.logger import logger
+from gsuid_core.plugins.ProxyManager.ProxyManager.models import Proxy
+from gsuid_core.plugins.ProxyManager.ProxyManager.proxy_manager import (
+    proxy_manager,
+    report_failure,
+    report_success,
+)
 
 from ...utils.database.models import WavesUser
 from ...wutheringwaves_config import WutheringWavesConfig
@@ -762,6 +768,8 @@ class WavesApi:
         proxy_func = get_need_proxy_func()
         if inspect.stack()[1].function in proxy_func or "all" in proxy_func:
             proxy_url = get_local_proxy_url()
+            if proxy_url:
+                proxy_manager.increment_proxied_requests()
         else:
             proxy_url = None
 
@@ -794,7 +802,14 @@ class WavesApi:
                     f"url:[{url}] params:[{params}] headers:[{header}] data:[{req_data}] raw_data:{raw_data}"
                 )
                 # 统一解析为 KuroApiResp
-                return KuroApiResp[Any].model_validate(raw_data)
+                resp_obj = KuroApiResp[Any].model_validate(raw_data)
+                if proxy_url and resp_obj.success and proxy_manager._current_proxy:
+                    if (
+                        proxy_manager._build_proxy_url(proxy_manager._current_proxy)
+                        == proxy_url
+                    ):
+                        report_success(proxy_manager._current_proxy)
+                return resp_obj
 
         async def solve_captcha():
             if not self.captcha_solver:
@@ -837,6 +852,13 @@ class WavesApi:
                 return response
 
             except aiohttp.ClientError as e:
+                if proxy_url and proxy_manager._current_proxy:
+                    if (
+                        proxy_manager._build_proxy_url(proxy_manager._current_proxy)
+                        == proxy_url
+                    ):
+                        proxy_manager.increment_proxied_failures()
+                        report_failure(proxy_manager._current_proxy)
                 logger.warning(f"url:[{url}] 网络请求失败, 尝试次数 {attempt + 1}", e)
                 if attempt < max_retries - 1:
                     await asyncio.sleep(retry_delay)
