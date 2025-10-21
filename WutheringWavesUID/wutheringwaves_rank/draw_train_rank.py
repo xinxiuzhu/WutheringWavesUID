@@ -1,7 +1,8 @@
 import asyncio
 import copy
+import json
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from PIL import Image, ImageDraw
 
@@ -52,6 +53,10 @@ TEXT_PATH = Path(__file__).parent / "texture2d"
 avatar_mask = Image.open(TEXT_PATH / "avatar_mask.png")
 char_mask = Image.open(TEXT_PATH / "char_mask.png")
 pic_cache = TimedCache(600, 200)
+
+# In-memory cache for group rank data
+# Structure: { "group_id": { "user_uid": TotalRankDetail, ... }, ... }
+group_rank_cache: Dict[str, Dict[str, TotalRankDetail]] = {}
 
 
 BOT_COLOR = [
@@ -288,16 +293,13 @@ async def draw_rank_card_template(
 
 
 async def _process_user_rank_data(
-    user: WavesBind, bot: Bot, group_id: str
+    user_id: str, bot_id: str, uid: str, group_id: str
 ) -> Optional[TotalRankDetail]:
-    if not user.uid:
-        return None
-
-    all_role_detail = await get_all_roleid_detail_info_int(user.uid)
+    all_role_detail = await get_all_roleid_detail_info_int(uid)
     if not all_role_detail:
         return None
 
-    waves_char_rank = await get_waves_char_rank(user.uid, all_role_detail)
+    waves_char_rank = await get_waves_char_rank(uid, all_role_detail)
     if not waves_char_rank:
         return None
 
@@ -313,26 +315,27 @@ async def _process_user_rank_data(
         if c.score
     ]
 
-    kuro_name = user.user_id
-    alias_name = user.user_id
+    kuro_name = user_id
+    alias_name = user_id
     try:
-        _, ck = await waves_api.get_ck_result(user.uid, user.user_id, bot.self_id)
+        bot = Bot(bot_id)
+        _, ck = await waves_api.get_ck_result(uid, user_id, bot_id)
         if ck:
-            account_info = await waves_api.get_base_info(user.uid, ck)
+            account_info = await waves_api.get_base_info(uid, ck)
             if account_info.success:
                 validated_info = AccountBaseInfo.model_validate(account_info.data)
                 kuro_name = validated_info.name
 
         sender_info = await bot.get_group_member_info(
-            group_id=group_id, user_id=int(user.user_id)
+            group_id=group_id, user_id=int(user_id)
         )
         alias_name = sender_info.get("card") or sender_info.get("nickname")
     except Exception as e:
-        logger.warning(f"为用户 {user.user_id} 获取昵称失败: {e}")
+        logger.warning(f"为用户 {user_id} 获取昵称失败: {e}")
 
     return TotalRankDetail(
-        user_id=user.user_id,
-        waves_id=user.uid,
+        user_id=user_id,
+        waves_id=uid,
         kuro_name=kuro_name,
         username=kuro_name,
         total_score=total_score,
@@ -346,29 +349,105 @@ async def draw_train_rank(bot: Bot, ev: Event) -> Union[str, bytes]:
     if not ev.group_id:
         return "请在群聊中使用此功能"
 
-    users = await WavesBind.get_group_all_uid(ev.group_id)
-    if not users:
+    # 定义缓存路径
+    cache_dir = Path(__file__).parent / "group_train_data"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_file = cache_dir / f"{ev.group_id}.json"
+
+    # 懒加载：仅在内存缓存不存在时从文件加载
+    if ev.group_id not in group_rank_cache:
+        if cache_file.exists():
+            try:
+                raw_data = json.loads(cache_file.read_text(encoding="utf-8"))
+                group_rank_cache[ev.group_id] = {
+                    uid: TotalRankDetail.model_validate(data)
+                    for uid, data in raw_data.items()
+                }
+            except (json.JSONDecodeError, TypeError):
+                logger.warning(f"群聊 {ev.group_id} 的排行缓存文件损坏，将重新生成。")
+                group_rank_cache[ev.group_id] = {}
+        else:
+            group_rank_cache[ev.group_id] = {}
+
+    current_group_cache = group_rank_cache[ev.group_id]
+
+    # 获取群内所有绑定的用户
+    bind_list = await WavesBind.get_group_all_uid(ev.group_id)
+    if not bind_list:
         return f"群内暂无绑定信息, 请使用`{PREFIX}绑定`后使用此功能"
 
-    tasks = [_process_user_rank_data(user, bot, ev.group_id) for user in users]
-    results = await asyncio.gather(*tasks)
+    # 构建一个包含所有独立UID的字典: {uid: bind_object}
+    all_group_uids: Dict[str, WavesBind] = {}
+    for bind in bind_list:
+        if bind.uid:
+            for uid in bind.uid.split("_"):
+                if uid:
+                    all_group_uids[uid] = bind
 
-    rank_data: List[TotalRankDetail] = [res for res in results if res]
+    # 确定需要刷新的用户：触发者 + 新用户
+    trigger_user_uid = await WavesBind.get_uid_by_game(ev.user_id, ev.bot_id)
+    users_to_refresh: Dict[str, WavesBind] = {}
 
-    if not rank_data:
+    if trigger_user_uid and trigger_user_uid in all_group_uids:
+        users_to_refresh[trigger_user_uid] = all_group_uids[trigger_user_uid]
+
+    for uid, bind in all_group_uids.items():
+        if uid not in current_group_cache:
+            if uid not in users_to_refresh:
+                users_to_refresh[uid] = bind
+
+    # 并发执行刷新任务并更新内存缓存
+    if users_to_refresh:
+        tasks = [
+            _process_user_rank_data(
+                bind.user_id, bind.bot_id, uid, ev.group_id
+            )
+            for uid, bind in users_to_refresh.items()
+        ]
+        results = await asyncio.gather(*tasks)
+        for res in results:
+            if res:
+                current_group_cache[res.waves_id] = res
+
+    if not current_group_cache:
         return f"群内无人刷新面板或缓存数据不全, 请使用`{PREFIX}刷新面板`后再试"
 
-    rank_data.sort(key=lambda x: x.total_score, reverse=True)
+    # 在内存中对所有数据进行排序和分配排名
+    full_rank_list = sorted(
+        current_group_cache.values(), key=lambda x: x.total_score, reverse=True
+    )
+    self_rank_detail = None
+    for i, detail in enumerate(full_rank_list):
+        detail.rank = i + 1
+        if detail.waves_id == trigger_user_uid:
+            self_rank_detail = detail
 
-    rank_data = rank_data[:20]
+    # 准备最终要绘制的列表
+    data_to_draw = full_rank_list[:20]
+    if self_rank_detail:
+        is_self_in_top_20 = any(
+            u.waves_id == self_rank_detail.waves_id for u in data_to_draw
+        )
+        if not is_self_in_top_20:
+            data_to_draw.append(self_rank_detail)
 
-    for i, user_data in enumerate(rank_data):
-        user_data.rank = i + 1
+    # 异步将内存缓存写回硬盘
+    async def save_cache_to_disk():
+        data_to_save = {
+            uid: detail.model_dump(mode="json")
+            for uid, detail in current_group_cache.items()
+        }
+        try:
+            cache_file.write_text(
+                json.dumps(data_to_save, ensure_ascii=False, indent=4),
+                encoding="utf-8",
+            )
+            logger.info(f"群聊 {ev.group_id} 的排行缓存已成功保存到硬盘。")
+        except Exception as e:
+            logger.error(f"保存群聊 {ev.group_id} 的排行缓存失败: {e}")
 
-    self_uid = await WavesBind.get_uid_by_game(ev.user_id, ev.bot_id)
-    if not self_uid:
-        self_uid = ""
+    asyncio.create_task(save_cache_to_disk())
 
     return await draw_rank_card_template(
-        f"当前群{ev.group_id}的练度排行", rank_data, self_uid
+        f"{ev.group_id}群练度排行", data_to_draw, trigger_user_uid or ""
     )

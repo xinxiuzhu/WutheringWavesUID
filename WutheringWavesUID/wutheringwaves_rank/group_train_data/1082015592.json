@@ -1,0 +1,272 @@
+{
+    "102308639": {
+        "rank": 1,
+        "user_id": "2609145334",
+        "username": "2609145334",
+        "alias_name": "2609145334",
+        "kuro_name": "2609145334",
+        "waves_id": "102308639",
+        "total_score": 529.8,
+        "char_score_details": [
+            {
+                "char_id": 1402,
+                "phantom_score": 4.39
+            },
+            {
+                "char_id": 1202,
+                "phantom_score": 6.48
+            },
+            {
+                "char_id": 1103,
+                "phantom_score": 77.34
+            },
+            {
+                "char_id": 1303,
+                "phantom_score": 4.14
+            },
+            {
+                "char_id": 1301,
+                "phantom_score": 150.3
+            },
+            {
+                "char_id": 1602,
+                "phantom_score": 93.27
+            },
+            {
+                "char_id": 1102,
+                "phantom_score": 4.15
+            },
+            {
+                "char_id": 1204,
+                "phantom_score": 4.64
+            },
+            {
+                "char_id": 1403,
+                "phantom_score": 6.26
+            },
+            {
+                "char_id": 1503,
+                "phantom_score": 146.86
+            },
+            {
+                "char_id": 1302,
+                "phantom_score": 144.65
+            },
+            {
+                "char_id": 1405,
+                "phantom_score": 1.09
+            },
+            {
+                "char_id": 1304,
+                "phantom_score": 176.85
+            },
+            {
+                "char_id": 1203,
+                "phantom_score": 37.25
+            },
+            {
+                "char_id": 1205,
+                "phantom_score": 160.52
+            },
+            {
+                "char_id": 1104,
+                "phantom_score": 6.42
+            },
+            {
+                "char_id": 1305,
+                "phantom_score": 175.45
+            },
+            {
+                "char_id": 1505,
+                "phantom_score": 106.15
+            },
+            {
+                "char_id": 1603,
+                "phantom_score": 169.4
+            },
+            {
+                "char_id": 1107,
+                "phantom_score": 164.69
+            },
+            {
+                "char_id": 1504,
+                "phantom_score": 6.37
+            },
+            {
+                "char_id": 1106,
+                "phantom_score": 6.48
+            },
+            {
+                "char_id": 1606,
+                "phantom_score": 164.85
+            },
+            {
+                "char_id": 1506,
+                "phantom_score": 159.31
+            },
+            {
+                "char_id": 1206,
+                "phantom_score": 137.84
+            },
+            {
+                "char_id": 1507,
+                "phantom_score": 161.27
+            },
+            {
+                "char_id": 1406,
+                "phantom_score": 6.21
+            },
+            {
+                "char_id": 1407,
+                "phantom_score": 162.97
+            },
+            {
+                "char_id": 1409,
+                "phantom_score": 177.5
+            },
+            {
+                "char_id": 1207,
+                "phantom_score": 140.29
+            },
+            {
+                "char_id": 1306,
+                "phantom_score": 121.62
+            },
+            {
+                "char_id": 1410,
+                "phantom_score": 159.66
+            }
+        ]
+    },
+    "102387361": {
+        "rank": 2,
+        "user_id": "1356098438",
+        "username": "1356098438",
+        "alias_name": "1356098438",
+        "kuro_name": "1356098438",
+        "waves_id": "102387361",
+        "total_score": 177.9,
+        "char_score_details": [
+            {
+                "char_id": 1202,
+                "phantom_score": 64.93
+            },
+            {
+                "char_id": 1602,
+                "phantom_score": 1.78
+            },
+            {
+                "char_id": 1404,
+                "phantom_score": 157.29
+            },
+            {
+                "char_id": 1503,
+                "phantom_score": 113.27
+            },
+            {
+                "char_id": 1102,
+                "phantom_score": 112.65
+            },
+            {
+                "char_id": 1303,
+                "phantom_score": 26.82
+            },
+            {
+                "char_id": 1405,
+                "phantom_score": 1.56
+            },
+            {
+                "char_id": 1403,
+                "phantom_score": 55.59
+            },
+            {
+                "char_id": 1302,
+                "phantom_score": 135.87
+            },
+            {
+                "char_id": 1304,
+                "phantom_score": 150.64
+            },
+            {
+                "char_id": 1203,
+                "phantom_score": 63.22
+            },
+            {
+                "char_id": 1205,
+                "phantom_score": 143.28
+            },
+            {
+                "char_id": 1105,
+                "phantom_score": 140.66
+            },
+            {
+                "char_id": 1305,
+                "phantom_score": 130.55
+            },
+            {
+                "char_id": 1505,
+                "phantom_score": 122.17
+            },
+            {
+                "char_id": 1106,
+                "phantom_score": 64.12
+            },
+            {
+                "char_id": 1603,
+                "phantom_score": 159.9
+            },
+            {
+                "char_id": 1107,
+                "phantom_score": 143.83
+            },
+            {
+                "char_id": 1606,
+                "phantom_score": 141.52
+            },
+            {
+                "char_id": 1506,
+                "phantom_score": 104.02
+            },
+            {
+                "char_id": 1206,
+                "phantom_score": 130.71
+            },
+            {
+                "char_id": 1607,
+                "phantom_score": 157.67
+            },
+            {
+                "char_id": 1507,
+                "phantom_score": 164.04
+            },
+            {
+                "char_id": 1407,
+                "phantom_score": 150.31
+            },
+            {
+                "char_id": 1409,
+                "phantom_score": 164.2
+            },
+            {
+                "char_id": 1207,
+                "phantom_score": 137.63
+            },
+            {
+                "char_id": 1608,
+                "phantom_score": 158.62
+            },
+            {
+                "char_id": 1306,
+                "phantom_score": 177.9
+            },
+            {
+                "char_id": 1605,
+                "phantom_score": 83.09
+            },
+            {
+                "char_id": 1410,
+                "phantom_score": 147.89
+            }
+        ]
+    }
+}
